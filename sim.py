@@ -71,10 +71,9 @@ class Arm:
 
 ion()
 
-
 arm = Arm(4)
 f = gcf()
-ax = f.add_subplot(111, projection='3d')
+ax = f.gca(projection='3d')
 
 startAng = array([0, 0, 0, 0])
 endAng = array([1, 1, 0.5, -1.5])
@@ -93,9 +92,11 @@ while 1:
 	x = positions[0, :]
 	y = positions[1, :]
 	z = positions[2, :]
-	ax.plot_wireframe(x, y, z)
-	xlabel('x')
-	ylabel('y')
+	ax.plot(x, y, z, marker='o', color='m')
+
+	ax.set_xlabel('X axis')
+	ax.set_ylabel('Y axis')
+	ax.set_zlabel('Z axis')
 	draw()
 	if (i < timeTaken / pauseTime):
 		currAng = currAng + (endAng - startAng) * scalar

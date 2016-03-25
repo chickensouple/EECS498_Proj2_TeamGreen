@@ -341,15 +341,3 @@ while (1):
   pause(pauseTime)
   
 
-
-
-# while 1:
-#   f.set(visible=0)
-#   clf()
-#   a.plot3D(currAng)
-#   f.set(visible=1)
-#   draw()
-#   if (i < timeTaken / pauseTime):
-#     currAng = currAng + (endAng - startAng) * scalar
-#     i += 1
-#   pause(pauseTime)
