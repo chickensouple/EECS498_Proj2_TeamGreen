@@ -138,9 +138,7 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    # self.ll = asarray([3,3,3,3,3,3])
-    self.ll = asarray([1, 20, 20, 20])
-
+    self.ll = asarray([3,3,3,3,3,3])
     # arm geometry to draw
     d=0.2
     hexa = asarray([
@@ -159,11 +157,6 @@ class Arm( object ):
       hexa, hexa[:,[0,2,1,3]], sqr,
     ], axis=0)
     self.geom = [( asarray([[0,0,0,1]]) ).T ]
-
-
-    self.motorOrientations = asarray([
-      [0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0]
-      ])
     #
     # Build twist matrices 
     # Build wireframe of all segments in the world coordinates
@@ -178,8 +171,7 @@ class Arm( object ):
       )
       # Compute the twist for this segment; 
       # twists alternate between the z and y axes
-      # w = asarray([0,(n+1) % 2, n % 2])
-      w = self.motorOrientations[n]
+      w = asarray([0,(n+1) % 2, n % 2])
       # Velocity induced at the origin
       v = -cross(w,[LL,0,0])
       # Collect the twists
@@ -229,6 +221,7 @@ class Arm( object ):
     Display the specified axes of the arm at the specified set of angles
     """
     A = self.at(ang)
+    print(A)
     for a,g in zip(A, self.geom):
       ng = dot(a,g)
       plot( ng[axI,:], ng[axJ,:], '.-' )
@@ -237,31 +230,11 @@ class Arm( object ):
     plot( tp[axI], tp[axJ], '.y' )
     
 
-
-  def plotReal3D(self, ang, ax):
-    A = self.at(ang)
-    wireframe = []
-
-    temp = array([0, 0, 0, 1])
-    for a in A:
-      ng = dot(a, temp.T)
-      temp += array([3, 0, 0, 0])
-      wireframe.append(ng)
-    wireframe = array(wireframe)
-    x = wireframe[:, 0]
-    y = wireframe[:, 1]
-    z = wireframe[:, 2]
-
-    ax.plot_wireframe(x, y, z)
-    # tp = dot(a, self.tool)
-    # plot( tp[axI], tp[axJ], 'hk' )
-    # plot( tp[axI], tp[axJ], '.y' )
-
   def plot3D( self, ang ):
     """
     Plot arm in 3 views
     """
-    ax = [-80,80,-80,80]
+    ax = [-20,20,-20,20]
     subplot(2,2,1)
     self.plotIJ(ang,0,1)
     axis('equal')
@@ -294,6 +267,7 @@ def example():
   while 1:
     f.set(visible=0)
     clf()
+    print(ang)
     a.plot3D(ang)
     f.set(visible=1)
     draw()
@@ -305,51 +279,7 @@ def example():
     else:
       ang = d
   
-# ion()
-# example()
-#   
-
-ion()
-
-startAng = array([0, 0, 0, 0])
-endAng = array([1, 0, 0, 0])
-
-timeTaken = 3
-pauseTime = 0.1
-scalar = 1 / (timeTaken / pauseTime)
-currAng = startAng
-
-a = Arm()
-f = gcf()
-ax = f.add_subplot(111, projection='3d')
-
-i = 0;
-
-
-x = [0, 0, 0]
-y = [1, 2, 3]
-z = [1, 4, 5]
-
-while (1):
-  a.plotReal3D(currAng, ax)
-  draw()
-
-  print(currAng)
-  if (i < timeTaken / pauseTime):
-    currAng = currAng + (endAng - startAng) * scalar
-    i += 1
-  pause(pauseTime)
   
-
-
-
-# while 1:
-#   f.set(visible=0)
-#   clf()
-#   a.plot3D(currAng)
-#   f.set(visible=1)
-#   draw()
-#   if (i < timeTaken / pauseTime):
-#     currAng = currAng + (endAng - startAng) * scalar
-#     i += 1
-#   pause(pauseTime)
+  
+ion()
+example()
