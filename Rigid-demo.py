@@ -139,7 +139,7 @@ class Arm( object ):
   def __init__(self):
     # link lengths
     # self.ll = asarray([3,3,3,3,3,3])
-    self.ll = asarray([1, 20, 20, 20])
+    self.ll = asarray([1, 20, 20, 5])
 
     # arm geometry to draw
     d=0.2
@@ -193,6 +193,52 @@ class Arm( object ):
     self.getToolJac = jacobian_cdas( 
       self.getTool, ones(self.tw.shape[0])*0.05 
     )
+
+    arenaLength = 30.48; # cm
+    self.arenaPoints = array([[-arenaLength/2, 0, 0], 
+      [arenaLength/2, 0, 0],
+      [arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, 0, 0], 
+      [-arenaLength/2, 0, arenaLength], 
+      [arenaLength/2, 0, arenaLength],
+      [arenaLength/2, 0, 0],
+      [arenaLength/2, 0, arenaLength],
+      [arenaLength/2, arenaLength, arenaLength],
+      [arenaLength/2, arenaLength, 0],
+      [arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, 0, arenaLength]])
+
+    self.arenaPoints[:, 1] += 10
+
+    paperWidth = 21 #cm
+    paperLength = 29.7 # cm
+    self.paperPoints = array([[-paperWidth/2, 0, 0],
+      [paperWidth/2, 0, 0],
+      [paperWidth/2, paperLength, 0],
+      [-paperWidth/2, paperLength, 0],
+      [-paperWidth/2, 0, 0]])
+
+
+
+    flip = True
+    if (flip):
+      temp = copy(self.paperPoints[:, 1])
+      self.paperPoints[:, 1] = self.paperPoints[:, 2]
+      self.paperPoints[:, 2] = temp
+
+    # shift in x direction
+    self.paperPoints[:, 0] += 2
+    self.paperPoints[:, 1] += 10
+    self.paperPoints[:, 2] += 5
+
+
+    self.toolHistory = None
+
+
   
   def at( self, ang ):
     """
@@ -237,25 +283,43 @@ class Arm( object ):
     plot( tp[axI], tp[axJ], '.y' )
     
 
-
   def plotReal3D(self, ang, ax):
     A = self.at(ang)
-    wireframe = []
+    for a,g in zip(A, self.geom):
+      ng = dot(a, g)
+      if ng.shape[1]<2:
+        continue
+      ax.plot3D(ng[0,:],ng[1,:],ng[2,:])
 
-    temp = array([0, 0, 0, 1])
-    for a in A:
-      ng = dot(a, temp.T)
-      temp += array([3, 0, 0, 0])
-      wireframe.append(ng)
-    wireframe = array(wireframe)
-    x = wireframe[:, 0]
-    y = wireframe[:, 1]
-    z = wireframe[:, 2]
 
-    ax.plot_wireframe(x, y, z)
-    # tp = dot(a, self.tool)
-    # plot( tp[axI], tp[axJ], 'hk' )
-    # plot( tp[axI], tp[axJ], '.y' )
+
+    tp = dot(a, self.tool)
+    tp = tp[:, newaxis]
+
+
+
+    if (self.toolHistory == None):
+      self.toolHistory = tp
+    else:
+      self.toolHistory = concatenate([self.toolHistory, tp], 1)
+      ax.plot3D(self.toolHistory[0, :], self.toolHistory[1, :], self.toolHistory[2, :])
+    
+
+
+    # tp = concatenate([tp, tp+1], 1)
+    # ax.plot3D(tp[0, :], tp[1, :], tp[2, :])
+
+
+    # draw arena
+    ax.plot3D(self.arenaPoints[:, 0], self.arenaPoints[:, 1], self.arenaPoints[:, 2])
+
+    # draw paper
+    ax.plot3D(self.paperPoints[:, 0], self.paperPoints[:, 1], self.paperPoints[:, 2])
+
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')
+
 
   def plot3D( self, ang ):
     """
@@ -305,39 +369,32 @@ def example():
     else:
       ang = d
   
-# ion()
-# example()
-#   
-
+# Turn on interactive mode in MatPlotLib
 ion()
 
 startAng = array([0, 0, 0, 0])
-endAng = array([1, 0, 0, 0])
+endAng = array([1, 0.5, 2, 0])
 
 timeTaken = 3
 pauseTime = 0.1
 scalar = 1 / (timeTaken / pauseTime)
 currAng = startAng
 
+
 a = Arm()
 f = gcf()
+f.clf()
 ax = f.add_subplot(111, projection='3d')
 
-i = 0;
-
-
-x = [0, 0, 0]
-y = [1, 2, 3]
-z = [1, 4, 5]
-
-while (1):
+i = 0
+while True:
+  ax.cla()
   a.plotReal3D(currAng, ax)
+  ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
   draw()
-
-  print(currAng)
   if (i < timeTaken / pauseTime):
     currAng = currAng + (endAng - startAng) * scalar
     i += 1
   pause(pauseTime)
-  
+
 

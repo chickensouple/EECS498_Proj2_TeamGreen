@@ -6,8 +6,6 @@ from matplotlib.pyplot import *
 from mpl_toolkits.mplot3d import Axes3D
 import pdb
 
-
-
 def generateRotationMatrix(angle, axis):
 	c = cos(angle)
 	s = sin(angle)
@@ -92,6 +90,8 @@ while 1:
 	x = positions[0, :]
 	y = positions[1, :]
 	z = positions[2, :]
+	ax.cla()
+	ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
 	ax.plot(x, y, z, marker='o', color='m')
 
 	ax.set_xlabel('X axis')
