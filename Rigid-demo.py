@@ -139,7 +139,7 @@ class Arm( object ):
   def __init__(self):
     # link lengths
     # self.ll = asarray([3,3,3,3,3,3])
-    self.ll = asarray([1, 20, 20, 5])
+    self.ll = asarray([1, 20, 20, 5, 5, 5])
 
     # arm geometry to draw
     d=0.2
@@ -162,7 +162,7 @@ class Arm( object ):
 
 
     self.motorOrientations = asarray([
-      [0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0]
+      [0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0], [1, 0, 0], [0, 0, 0]
       ])
     #
     # Build twist matrices 
@@ -182,6 +182,8 @@ class Arm( object ):
       w = self.motorOrientations[n]
       # Velocity induced at the origin
       v = -cross(w,[LL,0,0])
+      if (w[0] == 0 and w[1] == 0 and w[2] == 0):
+        v = array([0, 2, 0])
       # Collect the twists
       tw.append( concatenate([v,w],0) )
       # Accumulate the distance along the arm
@@ -231,9 +233,9 @@ class Arm( object ):
       self.paperPoints[:, 2] = temp
 
     # shift in x direction
-    self.paperPoints[:, 0] += 2
-    self.paperPoints[:, 1] += 10
-    self.paperPoints[:, 2] += 5
+    self.paperPoints[:, 0] += 5
+    self.paperPoints[:, 1] += 20
+    self.paperPoints[:, 2] += 0
 
 
     self.toolHistory = None
@@ -372,8 +374,8 @@ def example():
 # Turn on interactive mode in MatPlotLib
 ion()
 
-startAng = array([0, 0, 0, 0])
-endAng = array([1, 0.5, 2, 0])
+startAng = array([0, 0, 0, 0, 0, 0])
+endAng = array([0, 0, 0, 0, 1, 1])
 
 timeTaken = 3
 pauseTime = 0.1
