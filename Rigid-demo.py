@@ -374,8 +374,8 @@ def example():
 # Turn on interactive mode in MatPlotLib
 ion()
 
-startAng = array([0, 0, 0, 0, 0, 0])
-endAng = array([0, 0, 0, 0, 1, 1])
+startAng = array([3.14/2, 0, 0, 0, 0, 10])
+endAng = array([3.14/2, -1.5, 2, -0.5, 15, 0])
 
 timeTaken = 3
 pauseTime = 0.1
@@ -389,6 +389,7 @@ f.clf()
 ax = f.add_subplot(111, projection='3d')
 
 i = 0
+
 while True:
   ax.cla()
   a.plotReal3D(currAng, ax)
