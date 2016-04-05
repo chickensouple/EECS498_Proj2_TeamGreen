@@ -400,6 +400,7 @@ f.clf()
 ax = f.gca(projection='3d')
 
 i = 0
+
 while True:
   ax.cla()
   a.plotReal3D(currAng, ax)
