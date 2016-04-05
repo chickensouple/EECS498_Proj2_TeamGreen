@@ -138,7 +138,9 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([3,3,3,3,3,3])
+    # self.ll = asarray([3,3,3,3,3,3])
+    self.ll = asarray([1, 20, 20, 5, 5, 5])
+
     # arm geometry to draw
     d=0.2
     hexa = asarray([
@@ -157,6 +159,11 @@ class Arm( object ):
       hexa, hexa[:,[0,2,1,3]], sqr,
     ], axis=0)
     self.geom = [( asarray([[0,0,0,1]]) ).T ]
+
+
+    self.motorOrientations = asarray([
+      [0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0], [1, 0, 0], [0, 0, 0]
+      ])
     #
     # Build twist matrices 
     # Build wireframe of all segments in the world coordinates
@@ -171,9 +178,12 @@ class Arm( object ):
       )
       # Compute the twist for this segment; 
       # twists alternate between the z and y axes
-      w = asarray([0,(n+1) % 2, n % 2])
+      # w = asarray([0,(n+1) % 2, n % 2])
+      w = self.motorOrientations[n]
       # Velocity induced at the origin
       v = -cross(w,[LL,0,0])
+      if (w[0] == 0 and w[1] == 0 and w[2] == 0):
+        v = array([0, 2, 0])
       # Collect the twists
       tw.append( concatenate([v,w],0) )
       # Accumulate the distance along the arm
@@ -185,6 +195,52 @@ class Arm( object ):
     self.getToolJac = jacobian_cdas( 
       self.getTool, ones(self.tw.shape[0])*0.05 
     )
+
+    arenaLength = 30.48; # cm
+    self.arenaPoints = array([[-arenaLength/2, 0, 0], 
+      [arenaLength/2, 0, 0],
+      [arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, 0, 0], 
+      [-arenaLength/2, 0, arenaLength], 
+      [arenaLength/2, 0, arenaLength],
+      [arenaLength/2, 0, 0],
+      [arenaLength/2, 0, arenaLength],
+      [arenaLength/2, arenaLength, arenaLength],
+      [arenaLength/2, arenaLength, 0],
+      [arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, arenaLength, 0],
+      [-arenaLength/2, arenaLength, arenaLength],
+      [-arenaLength/2, 0, arenaLength]])
+
+    self.arenaPoints[:, 1] += 10
+
+    paperWidth = 21 #cm
+    paperLength = 29.7 # cm
+    self.paperPoints = array([[-paperWidth/2, 0, 0],
+      [paperWidth/2, 0, 0],
+      [paperWidth/2, paperLength, 0],
+      [-paperWidth/2, paperLength, 0],
+      [-paperWidth/2, 0, 0]])
+
+
+
+    flip = True
+    if (flip):
+      temp = copy(self.paperPoints[:, 1])
+      self.paperPoints[:, 1] = self.paperPoints[:, 2]
+      self.paperPoints[:, 2] = temp
+
+    # shift in x direction
+    self.paperPoints[:, 0] += 5
+    self.paperPoints[:, 1] += 20
+    self.paperPoints[:, 2] += 0
+
+
+    self.toolHistory = None
+
+
   
   def at( self, ang ):
     """
@@ -221,7 +277,6 @@ class Arm( object ):
     Display the specified axes of the arm at the specified set of angles
     """
     A = self.at(ang)
-    print(A)
     for a,g in zip(A, self.geom):
       ng = dot(a,g)
       plot( ng[axI,:], ng[axJ,:], '.-' )
@@ -230,56 +285,64 @@ class Arm( object ):
     plot( tp[axI], tp[axJ], '.y' )
     
 
-  def plot3D( self, ang ):
-    """
-    Plot arm in 3 views
-    """
-    ax = [-20,20,-20,20]
-    subplot(2,2,1)
-    self.plotIJ(ang,0,1)
-    axis('equal')
-    axis(ax)
-    grid(1)
-    xlabel('X'); ylabel('Y')
-    subplot(2,2,2)
-    self.plotIJ(ang,2,1)
-    axis('equal')
-    axis(ax)
-    grid(1)
-    xlabel('Z'); ylabel('Y')
-    subplot(2,2,3)
-    self.plotIJ(ang,0,2)
-    axis('equal')
-    axis(ax)
-    grid(1)
-    xlabel('X'); ylabel('Z')
+  def plotReal3D(self, ang, ax):
+    A = self.at(ang)
+    for a,g in zip(A, self.geom):
+      ng = dot(a, g)
+      if ng.shape[1]<2:
+        continue
+      ax.plot3D(ng[0,:],ng[1,:],ng[2,:])
 
 
-def example():
-  """
-  Run an example of a robot arm
-  
-  This can be steered via inverse Jacobian, or positioned.
-  """
-  a = Arm()
-  f = gcf()
-  ang = [0,0,0,0,0,0]
-  while 1:
-    f.set(visible=0)
-    clf()
-    print(ang)
-    a.plot3D(ang)
-    f.set(visible=1)
-    draw()
-    print "Angles: ",ang
-    d = input("direction as list / angles as tuple?>")
-    if type(d) == list:
-      Jt = a.getToolJac(ang)
-      ang = ang + dot(pinv(Jt)[:,:len(d)],d)
+
+    tp = dot(a, self.tool)
+    tp = tp[:, newaxis]
+
+
+
+    if (self.toolHistory == None):
+      self.toolHistory = tp
     else:
-      ang = d
-  
-  
-  
-ion()
-example()
+      self.toolHistory = concatenate([self.toolHistory, tp], 1)
+      ax.plot3D(self.toolHistory[0, :], self.toolHistory[1, :], self.toolHistory[2, :])
+    
+
+
+    # tp = concatenate([tp, tp+1], 1)
+    # ax.plot3D(tp[0, :], tp[1, :], tp[2, :])
+
+
+    # draw arena
+    ax.plot3D(self.arenaPoints[:, 0], self.arenaPoints[:, 1], self.arenaPoints[:, 2])
+
+    # draw paper
+    ax.plot3D(self.paperPoints[:, 0], self.paperPoints[:, 1], self.paperPoints[:, 2])
+
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')
+
+  # def plot3D( self, ang ):
+  #   """
+  #   Plot arm in 3 views
+  #   """
+  #   ax = [-80,80,-80,80]
+  #   subplot(2,2,1)
+  #   self.plotIJ(ang,0,1)
+  #   axis('equal')
+  #   axis(ax)
+  #   grid(1)
+  #   xlabel('X'); ylabel('Y')
+  #   subplot(2,2,2)
+  #   self.plotIJ(ang,2,1)
+  #   axis('equal')
+  #   axis(ax)
+  #   grid(1)
+  #   xlabel('Z'); ylabel('Y')
+  #   subplot(2,2,3)
+  #   self.plotIJ(ang,0,2)
+  #   axis('equal')
+  #   axis(ax)
+  #   grid(1)
+  #   xlabel('X'); ylabel('Z')
+

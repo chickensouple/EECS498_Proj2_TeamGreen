@@ -240,7 +240,18 @@ class Arm( object ):
 
     self.toolHistory = None
 
+    lengths = [20, 20, 10]
 
+    self.geom = [
+      array([[0, 0, 0, 1]]).T,
+      array([[0, 0, 0, 1]]).T,
+      array([[0, lengths[0]], [0, 0], [0, 0], [1, 1]]),
+      array([[lengths[0], lengths[0] + lengths[1]], [0, 0], [0, 0], [1, 1]]),
+      array([[lengths[0] + lengths[1], lengths[0] + lengths[1] + lengths[2]], [0, 0], [0, 0], [1, 1]]),
+      array([[lengths[0] + lengths[1] + lengths[2], lengths[0] + lengths[1] + lengths[2] + 5], [0, 0], [0, 0], [1, 1]]),
+      array([[lengths[0] + lengths[1] + lengths[2] + 5, lengths[0] + lengths[1] + lengths[2] + 10], [0, 0], [0, 0], [1, 1]]),
+    ]
+    self.tool = array([lengths[0] + lengths[1] + lengths[2] + 10, 0, 0, 1]).T
   
   def at( self, ang ):
     """
@@ -375,7 +386,7 @@ def example():
 ion()
 
 startAng = array([0, 0, 0, 0, 0, 0])
-endAng = array([0, 0, 0, 0, 1, 1])
+endAng = array([0, 0, 0, 0, 0, 1])
 
 timeTaken = 3
 pauseTime = 0.1
@@ -386,7 +397,7 @@ currAng = startAng
 a = Arm()
 f = gcf()
 f.clf()
-ax = f.add_subplot(111, projection='3d')
+ax = f.gca(projection='3d')
 
 i = 0
 while True:
