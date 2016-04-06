@@ -138,8 +138,9 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    # self.ll = asarray([3,3,3,3,3,3])
-    self.ll = asarray([1, 20, 20, 5, 5, 5])
+    self.ll = asarray([20, 20, 20, 5, 5, 5])
+    self.lly = asarray([0, 10, 0, 0, 0, 0])
+    self.llz = asarray([0, 0, 0, 0, 0, 0])
 
     # arm geometry to draw
     d=0.2
@@ -170,11 +171,13 @@ class Arm( object ):
     #
     tw = []
     LL = 0
+    LLY = 0
+    LLZ = 0
     for n,ll in enumerate(self.ll):
       # Scale the geometry to the specifies link length (ll)
       # Shift it to the correct location (LL, sum of the ll values)
       self.geom.append( 
-        ( asarray([ll,1,1,1])*geom+[LL,0,0,0] ).T
+        ( asarray([ll,1,1,1])*geom+[LL,LLY,LLZ,0] ).T
       )
       # Compute the twist for this segment; 
       # twists alternate between the z and y axes
@@ -188,9 +191,11 @@ class Arm( object ):
       tw.append( concatenate([v,w],0) )
       # Accumulate the distance along the arm
       LL += ll
+      LLY += self.lly[n]
+      LLZ += self.llz[n]
     # Build an array of collected twists
     self.tw = asarray(tw)
-    self.tool = asarray([LL,0,0,1]).T
+    self.tool = asarray([LL,LLY,LLZ,1]).T
     # overwrite method with jacobian function
     self.getToolJac = jacobian_cdas( 
       self.getTool, ones(self.tw.shape[0])*0.05 
@@ -239,8 +244,6 @@ class Arm( object ):
 
 
     self.toolHistory = None
-
-
   
   def at( self, ang ):
     """

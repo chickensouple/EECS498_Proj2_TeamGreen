@@ -24,8 +24,18 @@ class MainApp(JoyApp):
 		pass
 
 	def onEvent(self, evt):
-		pass
+		if evt.type == TIMEREVENT:
+			return
+		if evt.type != KEYDOWN:
+			return
 
+		if evt.key == K_q:
+			pass
+		elif evt.key == K_w:
+			pass
+
+
+		
 
 
 
