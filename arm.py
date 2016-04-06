@@ -138,8 +138,8 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([20, 20, 20, 5, 5, 5])
-    self.lly = asarray([0, 10, 0, 0, 0, 0])
+    self.ll = asarray([52, 33.5, 20, 5, 0, 0])
+    self.lly = asarray([8, -3, 0, 0, 0, 0])
     self.llz = asarray([0, 0, 0, 0, 0, 0])
 
     # arm geometry to draw
@@ -308,12 +308,6 @@ class Arm( object ):
     else:
       self.toolHistory = concatenate([self.toolHistory, tp], 1)
       ax.plot3D(self.toolHistory[0, :], self.toolHistory[1, :], self.toolHistory[2, :])
-    
-
-
-    # tp = concatenate([tp, tp+1], 1)
-    # ax.plot3D(tp[0, :], tp[1, :], tp[2, :])
-
 
     # draw arena
     ax.plot3D(self.arenaPoints[:, 0], self.arenaPoints[:, 1], self.arenaPoints[:, 2])
@@ -324,28 +318,3 @@ class Arm( object ):
     ax.set_xlabel('X axis')
     ax.set_ylabel('Y axis')
     ax.set_zlabel('Z axis')
-
-  # def plot3D( self, ang ):
-  #   """
-  #   Plot arm in 3 views
-  #   """
-  #   ax = [-80,80,-80,80]
-  #   subplot(2,2,1)
-  #   self.plotIJ(ang,0,1)
-  #   axis('equal')
-  #   axis(ax)
-  #   grid(1)
-  #   xlabel('X'); ylabel('Y')
-  #   subplot(2,2,2)
-  #   self.plotIJ(ang,2,1)
-  #   axis('equal')
-  #   axis(ax)
-  #   grid(1)
-  #   xlabel('Z'); ylabel('Y')
-  #   subplot(2,2,3)
-  #   self.plotIJ(ang,0,2)
-  #   axis('equal')
-  #   axis(ax)
-  #   grid(1)
-  #   xlabel('X'); ylabel('Z')
-

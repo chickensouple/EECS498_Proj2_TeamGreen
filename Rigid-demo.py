@@ -138,8 +138,8 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([20, 20, 20, 5, 5, 5])
-    self.lly = asarray([0, 10, 0, 0, 0, 0])
+    self.ll = asarray([52, 33.5, 20, 5, 0, 0])
+    self.lly = asarray([8, -3, 0, 0, 0, 0])
     self.llz = asarray([0, 0, 0, 0, 0, 0])
 
     # arm geometry to draw
@@ -378,7 +378,7 @@ def example():
 ion()
 
 startAng = array([0, 0, 0, 0, 0, 0])
-endAng = array([1, 1, 0, 0, 0, 0])
+endAng = array([0, 0, 0, 0, 0, 0])
 
 timeTaken = 3
 pauseTime = 0.1
