@@ -15,6 +15,10 @@ f = gcf()
 f.clf()
 ax = f.gca(projection='3d')
 
+
+
+
+
 coordinates = Coordinates()
 coordinates.calibrate(a.paperPoints[0:4, :])
 
@@ -25,7 +29,6 @@ wayPts = [array([0, 2]), array([9, 8]), array([20, 22])]
 idx = 0
 
 while True:
-
   ax.cla()
   a.plotReal3D(currAng, ax)
 
@@ -47,8 +50,50 @@ while True:
   direction = targetPos - currPos[0:3]
   Jt = a.getToolJac(currAng)
   currAng = currAng + 0.2 * dot(pinv(Jt)[:,:len(direction)],direction)
+  currAng[3] = a.calculateEndEffectorAngles([currAng[1], currAng[2]])
+
 
   pause(0.1)
+
+
+
+
+
+
+
+
+
+
+# startAng = array([0, 0, 0, 0])
+# endAng = array([0, 1, 1, 1])
+
+# timeTaken = 1
+# pauseTime = 0.1
+# scalar = 1 / (timeTaken / pauseTime)
+# currAng = startAng
+
+
+# a = Arm()
+# f = gcf()
+# f.clf()
+# ax = f.gca(projection='3d')
+
+# i = 0
+
+# while True:
+#   ax.cla()
+#   a.plotReal3D(currAng, ax)
+#   ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
+#   draw()
+#   if (i < timeTaken / pauseTime):
+#     currAng = currAng + (endAng - startAng) * scalar
+#     i += 1
+#   pause(pauseTime)
+
+
+
+
+
 
 
 

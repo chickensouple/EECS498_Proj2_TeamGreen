@@ -13,7 +13,7 @@ class MovePlan(Plan):
 
 
   def behavior(self):
-    angles = self.app.get_arm_angles()
+    angles = self.app.motors.get_angles()
     currPos = self.app.arm.getTool(angles)
     
     while (norm(currPos - pos) > self.threshold):
@@ -25,10 +25,10 @@ class MovePlan(Plan):
       angleSum = newAngles[1] + newAngles[2]
 
 
-      self.app.set_arm_angles(newAngles)
+      self.app.motors.set_angles(newAngles)
       yield self.forDuration(0.05)
 
-      angles = self.app.get_angles()
+      angles = self.motors.get_angles()
       currPos = self.app.arm.getTool(angles)
 
     yield

@@ -4,6 +4,7 @@ from scipy.linalg import expm as expM
 from matplotlib import *
 from matplotlib.pyplot import *
 from mpl_toolkits.mplot3d import Axes3D
+from math498 import *
 import pdb
 
 def seToSE( x ):
@@ -138,9 +139,9 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([52, 20, 20, 5])
-    self.lly = asarray([0, 0, 0, 0])
-    self.llz = asarray([0, 10, 0, 0])
+    self.ll = asarray([0, 20, 20, 5])
+    self.lly = asarray([0, -5, 0, 0])
+    self.llz = asarray([5, 0, -5, 0])
 
     # arm geometry to draw
     d=0.2
@@ -193,8 +194,11 @@ class Arm( object ):
       LL += ll
       LLY += self.lly[n]
       LLZ += self.llz[n]
+
+
     # Build an array of collected twists
     self.tw = asarray(tw)
+    self.toolJac = asarray([LL-self.ll[-1], LLY-self.lly[-1], LLZ-self.llz[-1], 1]).T
     self.tool = asarray([LL,LLY,LLZ,1]).T
     # overwrite method with jacobian function
     self.getToolJac = jacobian_cdas( 
@@ -221,8 +225,8 @@ class Arm( object ):
       [-arenaLength/2, 0, arenaLength]])
 
     self.arenaPoints[:, 0] += 0
-    self.arenaPoints[:, 1] += 60
-    self.arenaPoints[:, 2] += -20
+    self.arenaPoints[:, 1] += 10
+    self.arenaPoints[:, 2] += -5
 
     paperWidth = 21 #cm
     paperLength = 29.7 # cm
@@ -234,29 +238,32 @@ class Arm( object ):
 
 
 
-    flip = True
+    flip = False
     if (flip):
       temp = copy(self.paperPoints[:, 1])
       self.paperPoints[:, 1] = self.paperPoints[:, 2]
       self.paperPoints[:, 2] = temp
 
     self.paperXOffset = 5
-    self.paperYOffset = 60
-    self.paperZOffset = -20
+    self.paperYOffset = 10
+    self.paperZOffset = -5
 
     self.paperPoints[:, 0] += self.paperXOffset
     self.paperPoints[:, 1] += self.paperYOffset
     self.paperPoints[:, 2] += self.paperZOffset
 
     self.toolHistory = None
-  
 
-  def paperToArmCoordinates(self, paper):
-    return array([paper[0] + self.paperXOffset, paper[1] + self.paperYOffset, 0 + self.paperZOffset])
+    self.penOffset = pi / 4
 
 
-  def armToPaperCoordinates(self, arm):
-    return array([arm[0] - self.paperXOffset, arm[1] - self.paperYOffset, arm[2] - self.paperZOffset])
+  def calculateEndEffectorAngles(self, angles):
+    theta1 = angles[0]
+    theta2 = angles[1]
+    angle = -(pi/2) + (-theta1 + pi - theta2) + self.penOffset
+    angle = angle_wrap_pi(angle)
+    return angle
+
 
   def at( self, ang ):
     """

@@ -8,6 +8,8 @@ from arm import Arm
 from joy import *
 from joy.decl import *
 from MovePlan import *
+from Motors import *
+from Coordinates import *
 import pdb
 
 # Turn on interactive mode in MatPlotLib
@@ -21,16 +23,20 @@ class MainApp(JoyApp):
 		self.f.clf()
 		self.ax = self.f.gca(projection='3d')
 
-		self.motors = []
-		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx55)
-		self.motors.append(self.robot.at.Nx08)
-		self.motors.append(self.robot.at.Nx06)
+		motors = []
+		motors.append(self.robot.at.Nx01)
+		motors.append(self.robot.at.Nx55)
+		motors.append(self.robot.at.Nx08)
+		motors.append(self.robot.at.Nx06)
+		self.motors = Motors[motors]
 
 		self.movePlan = MovePlan(self)
 
 		self.pos1 = None
 		self.pos2 = None
+		self.coordinates = Coordinates()
+		self.calibrateIdx = -1
+		self.calibrationPoints = []
 
 	def onStart(self):
 		pass
@@ -60,15 +66,26 @@ class MainApp(JoyApp):
 		elif evt.key == K_z:
 			for motor in self.motors:
 				motor.go_slack()
-
-	def set_arm_angles(self, angles):
-		for angle, motor in zip(angles, self.motors):
-			motor.set_pos(angle * 18000 / pi)
-
-	def get_arm_angles(self):
-		angles = []
-		for motor in self.motors:
-			angles.append(float(motor.get_pos()) * pi / 18000)
+		elif evt.key == K_c:
+			if (self.calibrateIdx == -1):
+				print("Started Calibration. Move arm to lower left of paper, then press \'c\'")
+			elif (self.calibrateIdx == 0):
+				print("Move arm to lower right of paper, then press \'c\'")
+				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+			elif (self.calibrateIdx == 1):
+				print("Move arm to upper right of paper, then press \'c\'")
+				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+			elif (self.calibrateIdx == 2):
+				print("Move arm to upper left of paper, then press \'c\'")
+				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+			elif (self.calibrateIdx == 3):
+				print ("Finished Calibration")
+				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+				self.coordinates.calibrate(self.calibrationPoints)
+				self.calibrationPoints = []
+			self.calibrateIdx += 1
+			if (self.calibrateIdx >= 4):
+				self.calibrateIdx = -1
 
 
 
