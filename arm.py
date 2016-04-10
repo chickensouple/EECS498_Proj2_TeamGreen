@@ -138,9 +138,9 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([52, 33.5, 20, 5, 0, 0])
-    self.lly = asarray([8, -3, 0, 0, 0, 0])
-    self.llz = asarray([0, 0, 0, 0, 0, 0])
+    self.ll = asarray([52, 20, 20, 5])
+    self.lly = asarray([0, 0, 0, 0])
+    self.llz = asarray([0, 10, 0, 0])
 
     # arm geometry to draw
     d=0.2
@@ -184,7 +184,7 @@ class Arm( object ):
       # w = asarray([0,(n+1) % 2, n % 2])
       w = self.motorOrientations[n]
       # Velocity induced at the origin
-      v = -cross(w,[LL,0,0])
+      v = -cross(w,[LL,LLY,LLZ])
       if (w[0] == 0 and w[1] == 0 and w[2] == 0):
         v = array([0, 2, 0])
       # Collect the twists
@@ -202,6 +202,7 @@ class Arm( object ):
     )
 
     arenaLength = 30.48; # cm
+    self.arenaLength = arenaLength
     self.arenaPoints = array([[-arenaLength/2, 0, 0], 
       [arenaLength/2, 0, 0],
       [arenaLength/2, arenaLength, 0],
@@ -219,7 +220,9 @@ class Arm( object ):
       [-arenaLength/2, arenaLength, arenaLength],
       [-arenaLength/2, 0, arenaLength]])
 
-    self.arenaPoints[:, 1] += 10
+    self.arenaPoints[:, 0] += 0
+    self.arenaPoints[:, 1] += 60
+    self.arenaPoints[:, 2] += -20
 
     paperWidth = 21 #cm
     paperLength = 29.7 # cm
@@ -237,14 +240,24 @@ class Arm( object ):
       self.paperPoints[:, 1] = self.paperPoints[:, 2]
       self.paperPoints[:, 2] = temp
 
-    # shift in x direction
-    self.paperPoints[:, 0] += 5
-    self.paperPoints[:, 1] += 20
-    self.paperPoints[:, 2] += 0
+    self.paperXOffset = 5
+    self.paperYOffset = 60
+    self.paperZOffset = -20
 
+    self.paperPoints[:, 0] += self.paperXOffset
+    self.paperPoints[:, 1] += self.paperYOffset
+    self.paperPoints[:, 2] += self.paperZOffset
 
     self.toolHistory = None
   
+
+  def paperToArmCoordinates(self, paper):
+    return array([paper[0] + self.paperXOffset, paper[1] + self.paperYOffset, 0 + self.paperZOffset])
+
+
+  def armToPaperCoordinates(self, arm):
+    return array([arm[0] - self.paperXOffset, arm[1] - self.paperYOffset, arm[2] - self.paperZOffset])
+
   def at( self, ang ):
     """
     Compute the rigid transformations for a multi-segment arm

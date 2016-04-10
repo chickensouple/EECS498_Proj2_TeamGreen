@@ -22,6 +22,9 @@ class MovePlan(Plan):
       Jt = self.app.arm.getToolJac(ang)
       newAngles = angles + dot(pinv(Jt)[:,:len(direction)],direction)
 
+      angleSum = newAngles[1] + newAngles[2]
+
+
       self.app.set_arm_angles(newAngles)
       yield self.forDuration(0.05)
 

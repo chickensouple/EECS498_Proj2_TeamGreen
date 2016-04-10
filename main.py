@@ -19,15 +19,13 @@ class MainApp(JoyApp):
 		self.arm = Arm();
 		self.f = gcf()
 		self.f.clf()
-		self.ax = f.gca(projection='3d')
+		self.ax = self.f.gca(projection='3d')
 
 		self.motors = []
 		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx01)
-		self.motors.append(self.robot.at.Nx01)
+		self.motors.append(self.robot.at.Nx55)
+		self.motors.append(self.robot.at.Nx08)
+		self.motors.append(self.robot.at.Nx06)
 
 		self.movePlan = MovePlan(self)
 
@@ -71,9 +69,6 @@ class MainApp(JoyApp):
 		angles = []
 		for motor in self.motors:
 			angles.append(float(motor.get_pos()) * pi / 18000)
-
-
-
 
 
 
