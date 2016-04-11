@@ -17,10 +17,12 @@ class Motors:
 			motor.set_speed(2)
 			motor.go_slack()
 
+		self.motorDirs = [1, -1, 1, 1]
+
 	def get_angles(self):
 		angles = []
-		for motor in self.motors:
-			angles.append(float(motor.get_pos()) * self.centidegToRad)
+		for motor, motorDir in (self.motors, self.motorDirs):
+			angles.append(float(motor.get_pos()) * self.centidegToRad * motorDir)
 		return angles
 
 	def get_angle(self, idx):

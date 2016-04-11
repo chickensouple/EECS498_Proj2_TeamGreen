@@ -6,36 +6,35 @@ from ArmPlot import *
 class Arm:
 	def __init__(self):
 		self.lengths = [14., 26.5, 25., 2.]
-		self.angleDirs = [1, -1, 1, 1]
 		self.angleOffsets = [0, pi/5, -pi/2 - pi/5, 0]
 
 		# offsets
 		self.angle_lower_bounds = [-pi + offset for offset in self.angleOffsets]
 		self.angle_upper_bounds = [pi + offset for offset in self.angleOffsets]
 
-		print self.angle_lower_bounds
-		print self.angle_upper_bounds
+		# print self.angle_lower_bounds
+		# print self.angle_upper_bounds
 
 		self.armPlot = ArmPlot([0, 0, 0, 0], self.lengths)
 
 	def plot(self, angles, ax):
 		kinematicAngles = self.armAnglesToKinematicAngles(angles)
-		print kinematicAngles
+		# print kinematicAngles
 		self.armPlot.plotReal3D(kinematicAngles, ax)
 
 	def armAnglesToKinematicAngles(self, armAngles):
 		# recieves arm angles in radians
 		angles = []
-		for angle, angleDir, offset in zip(armAngles, self.angleDirs, self.angleOffsets):
-			newAngle = (angleDir * angle) + offset
+		for angle, offset in zip(armAngles, self.angleOffsets):
+			newAngle = angle + offset
 			angles.append(newAngle)
 		return angles
 
 	def kinematicAnglesToArmAngles(self, kinematicAngles):
 		# recieves kinematic angles in radians 
 		angles = []
-		for angle, angleDir, offset in zip(kinematicAngles, self.angleDirs, self.angleOffsets):
-			newAngle = (angle - offset) * angleDir
+		for angle, offset in zip(kinematicAngles, self.angleOffsets):
+			newAngle = angle - offset
 			angles.append(newAngle)
 		return angles
 			
@@ -63,12 +62,13 @@ class Arm:
 		y = pos[1]
 		z = pos[2] - self.lengths[0]
 
+
 		curr_angles = self.armAnglesToKinematicAngles(curr_arm_angles)
 		# print("Inverse Kinematics: " + str(curr_angles))
 
 		# changing into spherical coordinates
 		r2 = sqrt(z*z + x*x + y*y)
-		phi = -asin(z / r2)
+		phi = asin(z / r2)
 		theta = atan2(y, x)
 
 		minCost = -1
@@ -93,6 +93,10 @@ class Arm:
 				if (not self.__inverseKinematicsCheckValidity(sol, vertical)):
 					continue
 				cost = self.__inverseKinematicsCost(array(curr_angles)[1:], sol)
+				# temp = [theta, sol[0], sol[1], sol[2]]
+				# print temp
+				# temp = self.kinematicAnglesToArmAngles(temp)
+				# print self.forwardKinematics(temp)
 				if (minCost == -1 or cost < minCost):
 					minCost = cost
 					minCostSol = sol
@@ -147,11 +151,11 @@ class Arm:
 if (__name__ == "__main__"):
 	arm = Arm()
 	# angles = [0, pi/4, -pi/4, -pi/2]
-	angles = [0, 0, 0, 0]
-	[x, y, z] = arm.forwardKinematics(angles)
-	print x, y, z
+	# angles = [0, -0.1, 0, 0]
+	# [x, y, z] = arm.forwardKinematics(angles)
+	# print x, y, z
 
-	sol = arm.inverseKinematics([0, 40, 10], False, [0, 0, 0, 0])
+	sol = arm.inverseKinematics([0, 40, 0], False, [0, 0, 0, 0])
 	print array(sol) * 180 / pi
 	print arm.forwardKinematics(sol)
 
