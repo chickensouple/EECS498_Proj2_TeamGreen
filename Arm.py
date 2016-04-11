@@ -10,20 +10,24 @@ class Arm:
 		self.angleOffsets = [0, pi/5, -pi/2 - pi/5, 0]
 
 		# offsets
-		self.angle_lower_bounds = [-pi/2 - offset for offset in self.angleOffsets]
-		self.angle_upper_bounds = [pi/2 - offset for offset in self.angleOffsets]
+		self.angle_lower_bounds = [-pi + offset for offset in self.angleOffsets]
+		self.angle_upper_bounds = [pi + offset for offset in self.angleOffsets]
 
+		print self.angle_lower_bounds
+		print self.angle_upper_bounds
 
 		self.armPlot = ArmPlot([0, 0, 0, 0], self.lengths)
 
 	def plot(self, angles, ax):
-		self.armPlot.plotReal3D(angles, ax)
+		kinematicAngles = self.armAnglesToKinematicAngles(angles)
+		print kinematicAngles
+		self.armPlot.plotReal3D(kinematicAngles, ax)
 
 	def armAnglesToKinematicAngles(self, armAngles):
 		# recieves arm angles in radians
 		angles = []
 		for angle, angleDir, offset in zip(armAngles, self.angleDirs, self.angleOffsets):
-			newAngle = (angleDir * angle) - offset
+			newAngle = (angleDir * angle) + offset
 			angles.append(newAngle)
 		return angles
 
@@ -31,7 +35,7 @@ class Arm:
 		# recieves kinematic angles in radians 
 		angles = []
 		for angle, angleDir, offset in zip(kinematicAngles, self.angleDirs, self.angleOffsets):
-			newAngle = (angle + offset) * angleDir
+			newAngle = (angle - offset) * angleDir
 			angles.append(newAngle)
 		return angles
 			
@@ -39,15 +43,14 @@ class Arm:
 	def forwardKinematics(self, armAngles):
 		# angles is in arm angles
 		angles = self.armAnglesToKinematicAngles(armAngles)
-		print("Forward Kinematics angles: " + str(array(angles) * 180/pi))
 
 		r1 = self.lengths[1] * cos(angles[1]) + \
 			self.lengths[2] * cos(angles[1] + angles[2]) + \
 			self.lengths[3] * cos(angles[1] + angles[2] + angles[3])
 
-		z = self.lengths[0] - \
-			self.lengths[1] * sin(angles[1]) - \
-			self.lengths[2] * sin(angles[1] + angles[2]) - \
+		z = self.lengths[0] + \
+			self.lengths[1] * sin(angles[1]) + \
+			self.lengths[2] * sin(angles[1] + angles[2]) + \
 			self.lengths[3] * sin(angles[1] + angles[2] + angles[3])
 
 		x = r1 * cos(angles[0])

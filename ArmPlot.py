@@ -57,12 +57,12 @@ class ArmPlot( object ):
     for i in range(1, len(lengths)):
       lastGeom = self.geom[-1][:, -1]
       currLen = lengths[i]
-      angleSum -= angleOffsets[i]
+      angleSum += angleOffsets[i]
       geomDelta = array([currLen * cos(angleSum), 0, currLen * sin(angleSum), 0])
       temp = array([lastGeom, lastGeom + geomDelta]).T
       self.geom.append(temp)
 
-    motorDirs = array([[0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0]])
+    motorDirs = array([[0, 0, 1], [0, -1, 0], [0, -1, 0], [0, -1, 0]])
 
     tw = []
     for i in range(len(self.geom) - 1):
