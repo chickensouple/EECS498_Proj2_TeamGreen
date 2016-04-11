@@ -58,7 +58,7 @@ class Arm:
 		return [x, y, z]
 
 
-	def inverseKinematics(self, pos, vertical, curr_arm_angles):
+	def inverseKinematics(self, pos, end_effector_ang, curr_arm_angles):
 		x = pos[0]
 		y = pos[1]
 		z = pos[2] - self.lengths[0]
@@ -92,7 +92,7 @@ class Arm:
 			solutions = [sol1, sol2]
 			for sol in solutions:
 				fullSol = [theta, sol[0], sol[1], sol[2]]
-				if (not self.__inverseKinematicsCheckValidity(fullSol, vertical)):
+				if (not self.__inverseKinematicsCheckValidity(fullSol, end_effector_ang)):
 					continue
 				cost = self.__inverseKinematicsCost(array(curr_angles)[1:], sol)
 				# temp = [theta, sol[0], sol[1], sol[2]]
@@ -110,7 +110,7 @@ class Arm:
 		return armSol
 
 
-	def __inverseKinematicsCheckValidity(self, angles, vertical):
+	def __inverseKinematicsCheckValidity(self, angles, end_effector_ang):
 		for angle, lower, upper in zip(angles, self.angle_lower_bounds, self.angle_upper_bounds):
 			wrappedAngle = angle_wrap_pi(angle)
 			if (wrappedAngle < lower or wrappedAngle > upper):
@@ -118,14 +118,8 @@ class Arm:
 
 		angleSum = angles[1] + angles[2] + angles[3]
 		angleSum = angle_wrap_pi(angleSum)
-		if (vertical):
-			if (abs(angleSum - (0)) > 0.1):
-				return False
-				pass
-		else:
-			if (abs(angleSum - (-pi/2)) > 0.1):
-				return False
-				pass
+		if (abs(angleSum - end_effector_ang) > 0.1):
+			return False
 		return True
 
 
@@ -158,7 +152,7 @@ if (__name__ == "__main__"):
 	# [x, y, z] = arm.forwardKinematics(angles)
 	# print x, y, z
 
-	sol = arm.inverseKinematics([0, 10, 0], False, [0, 0, 0, 0])
+	sol = arm.inverseKinematics([0, 10, 0], -pi/2, [0, 0, 0, 0])
 	print array(sol) * 180 / pi
 	print arm.forwardKinematics(sol)
 
