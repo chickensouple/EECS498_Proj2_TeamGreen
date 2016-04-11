@@ -16,6 +16,7 @@ class Motors:
 		for motor in self.motors:
 			motor.set_mode(0)
 			motor.set_speed(2)
+			motor.go_slack()
 
 	def get_angles(self):
 		angles = []
@@ -32,5 +33,8 @@ class Motors:
 
 	def set_angle(self, idx, angle):
 		self.motors[idx].set_pos(angle * self.radToCentideg)
-		
+
+	def go_slack(self):
+		for motor in self.motors:
+			motor.go_slack()		
 

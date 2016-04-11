@@ -17,7 +17,8 @@ ion()
 
 class MainApp(JoyApp):
 	def __init__(self, *arg, **kw):
-		JoyApp.__init__(self, *arg, **kw)
+		cfg = dict()
+		JoyApp.__init__(self, cfg=cfg, *arg, **kw)
 		self.arm = Arm();
 		self.f = gcf()
 		self.f.clf()
@@ -25,10 +26,10 @@ class MainApp(JoyApp):
 
 		motors = []
 		motors.append(self.robot.at.Nx01)
-		motors.append(self.robot.at.Nx55)
 		motors.append(self.robot.at.Nx08)
 		motors.append(self.robot.at.Nx06)
-		self.motors = Motors[motors]
+		motors.append(self.robot.at.Nx04)
+		self.motors = Motors(motors)
 
 		self.movePlan = MovePlan(self)
 
@@ -48,24 +49,21 @@ class MainApp(JoyApp):
 			return
 
 		if evt.key == K_q:
-			self.pos1 = self.arm.getTool(self.get_arm_angles())
+			# self.pos1 = self.arm.getTool(self.get_arm_angles())
+			self.angles1 = self.motors.get_angles()
 		elif evt.key == K_w:
-			self.pos2 = self.arm.getTool(self.get_arm_angles())
+			# self.pos2 = self.arm.getTool(self.get_arm_angles())
+			self.angles2 = self.motors.get_angles()
 		elif evt.key == K_e:
-			if (self.pos1 == None):
-				print("Pos1 not set")
-				return
-			self.movePlan.setPos(self.pos1)
-			self.movePlan.start()
+			self.motors.set_angles(self.angles1)
+			# self.movePlan.setPos(self.pos1)
+			# self.movePlan.start()
 		elif evt.key == K_r:
-			if (self.pos2 == None):
-				print("Pos2 not set")
-				return
-			self.movePlan.setPos(self.pos2)
-			self.movePlan.start()
+			self.motors.set_angles(self.angles2)
+			# self.movePlan.setPos(self.pos2)
+			# self.movePlan.start()
 		elif evt.key == K_z:
-			for motor in self.motors:
-				motor.go_slack()
+			self.motors.go_slack()
 		elif evt.key == K_c:
 			if (self.calibrateIdx == -1):
 				print("Started Calibration. Move arm to lower left of paper, then press \'c\'")
@@ -89,7 +87,7 @@ class MainApp(JoyApp):
 
 
 
-robot = {"count": 2, "port": dict(TYPE="tty", glob="/dev/ttyACM0", baudrate=115200)}
+robot = {"count": 4, "port": dict(TYPE="tty", glob="/dev/ttyACM0", baudrate=115200)}
 scr = {}
 
 app = MainApp(robot=robot, scr=scr)

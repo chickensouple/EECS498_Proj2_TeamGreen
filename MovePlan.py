@@ -22,7 +22,7 @@ class MovePlan(Plan):
       Jt = self.app.arm.getToolJac(ang)
       newAngles = angles + dot(pinv(Jt)[:,:len(direction)],direction)
 
-      angleSum = newAngles[1] + newAngles[2]
+      newAngles[3] = self.app.arm.calculateEndEffectorAngles(False, [newAngles[1], newAngles[2]])
 
 
       self.app.motors.set_angles(newAngles)

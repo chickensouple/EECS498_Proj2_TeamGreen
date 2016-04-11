@@ -99,7 +99,7 @@ def jacobian_cdas( func, scl, lint=0.8, tol=1e-12, eps = 1e-30, withScl = False 
     dyp = empty((len(s),len(y0)),x0.dtype)
     dyn = empty_like(dyp)
     while True:
-      #print "Jac iter ",s
+      # print "Jac iter ",s
       d0 = diag(s)
       dyp[idx,:] = [ func(x0+dx)-y0 for dx in d0[idx,:] ]
       dypc = dyp.conj()
@@ -139,7 +139,7 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([0, 20, 20, 5])
+    self.ll = asarray([0, 20, 20, 2])
     self.lly = asarray([0, -5, 0, 0])
     self.llz = asarray([5, 0, -5, 0])
 
@@ -238,7 +238,7 @@ class Arm( object ):
 
 
 
-    flip = False
+    flip = True
     if (flip):
       temp = copy(self.paperPoints[:, 1])
       self.paperPoints[:, 1] = self.paperPoints[:, 2]
@@ -257,11 +257,14 @@ class Arm( object ):
     self.penOffset = pi / 4
 
 
-  def calculateEndEffectorAngles(self, angles):
+  def calculateEndEffectorAngles(self, vertical, angles):
     theta1 = angles[0]
     theta2 = angles[1]
     angle = -(pi/2) + (-theta1 + pi - theta2) + self.penOffset
+    if (vertical):
+      angle -= pi/2
     angle = angle_wrap_pi(angle)
+
     return angle
 
 

@@ -50,7 +50,7 @@ while True:
   direction = targetPos - currPos[0:3]
   Jt = a.getToolJac(currAng)
   currAng = currAng + 0.2 * dot(pinv(Jt)[:,:len(direction)],direction)
-  currAng[3] = a.calculateEndEffectorAngles([currAng[1], currAng[2]])
+  currAng[3] = a.calculateEndEffectorAngles(True, [currAng[1], currAng[2]])
 
 
   pause(0.1)
