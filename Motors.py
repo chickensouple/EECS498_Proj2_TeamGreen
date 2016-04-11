@@ -26,14 +26,14 @@ class Motors:
 		return angles
 
 	def get_angle(self, idx):
-		return self.motors[idx].get_pos() * self.centidegToRad
+		return self.motors[idx].get_pos() * self.centidegToRad * self.motorDir[idx]
 
 	def set_angles(self, angles):
-		for angle, motor in zip(angles, self.motors):
-			motor.set_pos(angle * self.radToCentideg)
+		for angle, motor, motorDir in zip(angles, self.motors, self.motorDirs):
+			motor.set_pos(angle * self.radToCentideg * motorDir)
 
 	def set_angle(self, idx, angle):
-		self.motors[idx].set_pos(angle * self.radToCentideg)
+		self.motors[idx].set_pos(angle * self.radToCentideg * self.motorDirs[idx])
 
 	def go_slack(self):
 		for motor in self.motors:
