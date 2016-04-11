@@ -73,8 +73,11 @@ ax = f.gca(projection='3d')
 
 
 startAng = array([0, 0, 0, 0])
-endAng = array([0, 1, 0, 0])
-endAng = a.inverseKinematics([0, 40, 10], False, startAng)
+endAng = array([0, 0, 0, 0])
+endAng = a.inverseKinematics([30, 10, 0], False, startAng)
+print endAng
+print a.forwardKinematics(endAng)
+
 
 timeTaken = 1
 pauseTime = 0.1
@@ -84,8 +87,8 @@ currAng = startAng
 i = 0
 
 while True:
-  ax.cla()
-  a.plot(currAng, ax)
+  # ax.cla()
+  a.plot(a.armAnglesToKinematicAngles(currAng), ax)
   ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
   draw()
   if (i < timeTaken / pauseTime):

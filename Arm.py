@@ -7,13 +7,14 @@ class Arm:
 	def __init__(self):
 		self.lengths = [14., 26.5, 25., 2.]
 		self.angleDirs = [1, -1, 1, 1]
-		self.angleOffsets = [0, -pi/5, pi/2, 0]
+		self.angleOffsets = [0, pi/5, -pi/2 - pi/5, 0]
 
 		# offsets
-		self.angle_lower_bounds = [-pi - offset for offset in self.angleOffsets]
-		self.angle_upper_bounds = [pi - offset for offset in self.angleOffsets]
+		self.angle_lower_bounds = [-pi/2 - offset for offset in self.angleOffsets]
+		self.angle_upper_bounds = [pi/2 - offset for offset in self.angleOffsets]
 
-		self.armPlot = ArmPlot(self.angleOffsets, self.lengths)
+
+		self.armPlot = ArmPlot([0, 0, 0, 0], self.lengths)
 
 	def plot(self, angles, ax):
 		self.armPlot.plotReal3D(angles, ax)
@@ -38,16 +39,16 @@ class Arm:
 	def forwardKinematics(self, armAngles):
 		# angles is in arm angles
 		angles = self.armAnglesToKinematicAngles(armAngles)
+		print("Forward Kinematics angles: " + str(array(angles) * 180/pi))
 
 		r1 = self.lengths[1] * cos(angles[1]) + \
 			self.lengths[2] * cos(angles[1] + angles[2]) + \
 			self.lengths[3] * cos(angles[1] + angles[2] + angles[3])
 
-		z = self.lengths[0] + \
-			self.lengths[1] * sin(angles[1]) + \
-			self.lengths[2] * sin(angles[1] + angles[2]) + \
+		z = self.lengths[0] - \
+			self.lengths[1] * sin(angles[1]) - \
+			self.lengths[2] * sin(angles[1] + angles[2]) - \
 			self.lengths[3] * sin(angles[1] + angles[2] + angles[3])
-
 
 		x = r1 * cos(angles[0])
 		y = r1 * sin(angles[0])
@@ -60,10 +61,11 @@ class Arm:
 		z = pos[2] - self.lengths[0]
 
 		curr_angles = self.armAnglesToKinematicAngles(curr_arm_angles)
+		# print("Inverse Kinematics: " + str(curr_angles))
 
 		# changing into spherical coordinates
 		r2 = sqrt(z*z + x*x + y*y)
-		phi = asin(z / r2)
+		phi = -asin(z / r2)
 		theta = atan2(y, x)
 
 		minCost = -1
@@ -141,11 +143,12 @@ class Arm:
 
 if (__name__ == "__main__"):
 	arm = Arm()
-	angles = [0, pi/4, -pi/4, -pi/2]
+	# angles = [0, pi/4, -pi/4, -pi/2]
+	angles = [0, 0, 0, 0]
 	[x, y, z] = arm.forwardKinematics(angles)
 	print x, y, z
 
-	sol = arm.inverseKinematics([0, 50, 0], True, [0, 0, 0, 0])
+	sol = arm.inverseKinematics([0, 40, 10], False, [0, 0, 0, 0])
 	print array(sol) * 180 / pi
 	print arm.forwardKinematics(sol)
 

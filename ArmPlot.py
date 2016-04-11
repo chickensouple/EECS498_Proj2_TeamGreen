@@ -117,6 +117,7 @@ class ArmPlot( object ):
     return dot(M, self.tool)
 
   def plotReal3D(self, ang, ax):
+    ax.cla()
     A = self.at(ang)
     for a,g in zip(A, self.geom):
       ng = dot(a, g)
