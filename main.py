@@ -4,7 +4,7 @@ from scipy.linalg import expm as expM
 from matplotlib import *
 from matplotlib.pyplot import *
 from mpl_toolkits.mplot3d import Axes3D
-from arm import Arm
+from Arm import *
 from joy import *
 from joy.decl import *
 from MovePlan import *
@@ -33,11 +33,13 @@ class MainApp(JoyApp):
 
 		self.movePlan = MovePlan(self)
 
-		self.pos1 = None
-		self.pos2 = None
+		self.angles1 = None
+		self.angles2 = None
 		self.coordinates = Coordinates()
 		self.calibrateIdx = -1
 		self.calibrationPoints = []
+
+		self.pos3d = None
 
 	def onStart(self):
 		pass
@@ -49,41 +51,104 @@ class MainApp(JoyApp):
 			return
 
 		if evt.key == K_q:
-			# self.pos1 = self.arm.getTool(self.get_arm_angles())
 			self.angles1 = self.motors.get_angles()
 		elif evt.key == K_w:
-			# self.pos2 = self.arm.getTool(self.get_arm_angles())
 			self.angles2 = self.motors.get_angles()
 		elif evt.key == K_e:
+			if (self.angles1 == None):
+				print("Angles 1 not set, press q to set")
+				return
 			self.motors.set_angles(self.angles1)
-			# self.movePlan.setPos(self.pos1)
-			# self.movePlan.start()
 		elif evt.key == K_r:
+			if (self.angles1 == None):
+				print("Angles 2 not set, press w to set")
+				return
 			self.motors.set_angles(self.angles2)
-			# self.movePlan.setPos(self.pos2)
-			# self.movePlan.start()
+
+
 		elif evt.key == K_z:
 			self.motors.go_slack()
+
+
+		elif evt.key == K_p:
+			print (array(self.motors.get_angles()) * 180 / pi)
+
+
 		elif evt.key == K_c:
 			if (self.calibrateIdx == -1):
 				print("Started Calibration. Move arm to lower left of paper, then press \'c\'")
 			elif (self.calibrateIdx == 0):
 				print("Move arm to lower right of paper, then press \'c\'")
-				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+				self.calibrationPoints.append(self.forwardKinematics(self.motors.get_angles()))
 			elif (self.calibrateIdx == 1):
 				print("Move arm to upper right of paper, then press \'c\'")
-				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+				self.calibrationPoints.append(self.forwardKinematics(self.motors.get_angles()))
 			elif (self.calibrateIdx == 2):
 				print("Move arm to upper left of paper, then press \'c\'")
-				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+				self.calibrationPoints.append(self.forwardKinematics(self.motors.get_angles()))
 			elif (self.calibrateIdx == 3):
 				print ("Finished Calibration")
-				self.calibrationPoints.append(self.arm.at(self.motor.get_angles()))
+				self.calibrationPoints.append(self.forwardKinematics(self.motors.get_angles()))
 				self.coordinates.calibrate(self.calibrationPoints)
+				self.arm.armPlot.setPaperPoints(self.calibrationPoints)
+
 				self.calibrationPoints = []
 			self.calibrateIdx += 1
 			if (self.calibrateIdx >= 4):
 				self.calibrateIdx = -1
+
+		elif evt.key == K_a:
+			if (calibrated):
+				self.pos3d = self.coordinates.transformPaperToReal([paperWidth/2, paperLength/2, 1])
+			else:
+				self.pos3d = [40, 0, 10]
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_UP:
+			self.pos3d[0] += 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_DOWN:
+			self.pos3d[0] += 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_LEFT:
+			self.pos3d[1] += 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_RIGHT:
+			self.pos3d[1] -= 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_i:
+			self.pos3d[2] += 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
+		elif evt.key == K_k:
+			self.pos3d[2] -= 2
+			angles = self.arm.inverseKinematics(self.paperPos, False, self.motors.get_angles())
+			if (angles == None):
+				print("Can't reach location")
+				return
+			self.motors.set_angles(angles)
 
 
 

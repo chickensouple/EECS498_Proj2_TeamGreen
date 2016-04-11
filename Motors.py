@@ -4,7 +4,6 @@ from scipy.linalg import expm as expM
 from matplotlib import *
 from matplotlib.pyplot import *
 from mpl_toolkits.mplot3d import Axes3D
-from arm import Arm
 from joy import *
 from joy.decl import *
 

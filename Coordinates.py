@@ -33,6 +33,10 @@ class Coordinates:
 		paperLength = 29.7 # cm
 		self.paperPoints = array([[0, 0, 1], [paperWidth, 0, 1], [paperWidth, paperLength, 1], [0, paperLength, 1]])
 		self.H = None
+		self.calibrated = False
+
+	def isCalibrated(self):
+		return self.calibrated
 
 	def calibrate(self, realPoints):
 		# realPoints is a 4 by 3 array
@@ -40,6 +44,7 @@ class Coordinates:
 		# that corresponds to a paper point
 		self.H = findHomography(self.paperPoints, realPoints)
 		self.H_inv = inv(self.H)
+		self.calibrated = True
 
 	def transformPaperToReal(self, paperPoints):
 		realPoints = dot(self.H, paperPoints.T)
