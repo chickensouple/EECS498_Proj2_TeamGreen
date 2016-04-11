@@ -6,12 +6,13 @@ from ArmPlot import *
 class Arm:
 	def __init__(self):
 		self.lengths = [14., 26.5, 25., 2.]
-		self.angleOffsets = [0, pi/5, -pi/2 - pi/5, 0]
+		self.angleOffsets = [0, 0.48, -pi/2 - 0.48, 0]
 
 		# offsets
-		self.angle_lower_bounds = [-pi + offset for offset in self.angleOffsets]
-		self.angle_upper_bounds = [pi + offset for offset in self.angleOffsets]
+		self.angle_lower_bounds = [-pi/2 + offset for offset in self.angleOffsets]
+		self.angle_upper_bounds = [pi/2 + offset for offset in self.angleOffsets]
 
+		# print("BOUNDS:")
 		# print self.angle_lower_bounds
 		# print self.angle_upper_bounds
 
@@ -90,7 +91,8 @@ class Arm:
 			sol2 = [sols[1][0], alpha2, sols[1][1]]
 			solutions = [sol1, sol2]
 			for sol in solutions:
-				if (not self.__inverseKinematicsCheckValidity(sol, vertical)):
+				fullSol = [theta, sol[0], sol[1], sol[2]]
+				if (not self.__inverseKinematicsCheckValidity(fullSol, vertical)):
 					continue
 				cost = self.__inverseKinematicsCost(array(curr_angles)[1:], sol)
 				# temp = [theta, sol[0], sol[1], sol[2]]
@@ -110,10 +112,11 @@ class Arm:
 
 	def __inverseKinematicsCheckValidity(self, angles, vertical):
 		for angle, lower, upper in zip(angles, self.angle_lower_bounds, self.angle_upper_bounds):
-			if (angle < lower or angle > upper):
+			wrappedAngle = angle_wrap_pi(angle)
+			if (wrappedAngle < lower or wrappedAngle > upper):
 				return False
 
-		angleSum = angles[0] + angles[1] + angles[2]
+		angleSum = angles[1] + angles[2] + angles[3]
 		angleSum = angle_wrap_pi(angleSum)
 		if (vertical):
 			if (abs(angleSum - (0)) > 0.1):
@@ -155,7 +158,7 @@ if (__name__ == "__main__"):
 	# [x, y, z] = arm.forwardKinematics(angles)
 	# print x, y, z
 
-	sol = arm.inverseKinematics([0, 40, 0], False, [0, 0, 0, 0])
+	sol = arm.inverseKinematics([0, 10, 0], False, [0, 0, 0, 0])
 	print array(sol) * 180 / pi
 	print arm.forwardKinematics(sol)
 
