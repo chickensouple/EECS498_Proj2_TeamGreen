@@ -77,7 +77,7 @@ class ArmPlot( object ):
     self.tool = self.geom[-1][:, -1]
 
     self.paperPoints = None
-    self.toolHistory = None
+    self.toolHistory = []
 
     self.penOffset = pi / 4
 
@@ -128,18 +128,15 @@ class ArmPlot( object ):
 
 
     tp = dot(a, self.tool)
-    tp = tp[:, newaxis]
 
 
+    self.toolHistory.append(tp)
+    if (len(self.toolHistory) > 200):
+      self.toolHistory.pop(0)
 
-    if (self.toolHistory == None):
-      self.toolHistory = tp
-    else:
-      self.toolHistory = concatenate([self.toolHistory, tp], 1)
-      ax.plot3D(self.toolHistory[0, :], self.toolHistory[1, :], self.toolHistory[2, :])
+    toolHistory = array(self.toolHistory).T
 
-    # # draw arena
-    # ax.plot3D(self.arenaPoints[:, 0], self.arenaPoints[:, 1], self.arenaPoints[:, 2])
+    ax.plot3D(toolHistory[0, :], toolHistory[1, :], toolHistory[2, :])
 
     # draw paper
     if (self.paperPoints != None):
