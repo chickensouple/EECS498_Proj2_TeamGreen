@@ -74,7 +74,7 @@ ax = f.gca(projection='3d')
 
 startAng = array([0, 0, 0, 0])
 endAng = array([0, 1, 0, 0])
-endAng = a.inverseKinematics([10, 18, 10], -pi/2, startAng)
+endAng = a.inverseKinematics([40, 0, 10], -pi/2, startAng)
 print endAng
 print a.armAnglesToKinematicAngles(endAng)
 # print a.forwardKinematics(endAng)

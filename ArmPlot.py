@@ -94,7 +94,6 @@ class ArmPlot( object ):
 
     return angle
 
-
   def at( self, ang ):
     """
     Compute the rigid transformations for a multi-segment arm
@@ -125,10 +124,7 @@ class ArmPlot( object ):
         continue
       ax.plot3D(ng[0,:],ng[1,:],ng[2,:])
 
-
-
     tp = dot(a, self.tool)
-
 
     self.toolHistory.append(tp)
     if (len(self.toolHistory) > 200):
