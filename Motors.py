@@ -17,25 +17,27 @@ class Motors:
 			motor.set_speed(2)
 			motor.go_slack()
 
-		self.motorDirs = [1, 1, -1, -1]
+		self.motorDirs = [1, 1, 1, -1]
+		self.motorOffsets = [0, 0, 0, 0]
 
 	def get_angles(self):
 		angles = []
-		for motor, motorDir in zip(self.motors, self.motorDirs):
-			angles.append(float(motor.get_pos()) * self.centidegToRad * motorDir)
+		for motor, motorDir, motorOffset in zip(self.motors, self.motorDirs, self.motorOffsets):
+			angles.append(float(motor.get_pos()) * self.centidegToRad * motorDir - motorOffset)
 		return angles
 
 	def get_angle(self, idx):
-		return self.motors[idx].get_pos() * self.centidegToRad * self.motorDir[idx]
+		return self.motors[idx].get_pos() * self.centidegToRad * self.motorDir[idx] - self.motorOffsets[idx]
 
 	def set_angles(self, angles):
-		for angle, motor, motorDir in zip(angles, self.motors, self.motorDirs):
-			motor.set_pos(angle * self.radToCentideg * motorDir)
+		for motor, motorDir, motorOffset, angle in zip(self.motors, self.motorDirs, self.motorOffsets, angles):
+			sentAngle = int(angle * self.radToCentideg * motorDir + motorOffset)
+			motor.set_pos(sentAngle)
 
 	def set_angle(self, idx, angle):
-		self.motors[idx].set_pos(angle * self.radToCentideg * self.motorDirs[idx])
+		self.motors[idx].set_pos(int((angle + self.motorOffsets[idx]) * self.radToCentideg * self.motorDirs[idx]))
 
 	def go_slack(self):
 		for motor in self.motors:
-			motor.go_slack()		
+			motor.go_slack()
 

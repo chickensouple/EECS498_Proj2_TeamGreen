@@ -10,51 +10,6 @@ from Coordinates import *
 from Constants import *
 import pdb
 
-
-# ion()
-# a = Arm([0, 0, pi/2, 0], [1, -1, 1, 1])
-# f = gcf()
-# f.clf()
-# ax = f.gca(projection='3d')
-
-
-# coordinates = Coordinates()
-# coordinates.calibrate(a.paperPoints[0:4, :])
-
-# startAng = array([1.5, 0, 0, 1])
-# currAng = startAng
-
-# wayPts = [array([0, 2]), array([9, 8]), array([20, 22])]
-# idx = 0
-
-# while True:
-#   ax.cla()
-#   a.plotReal3D(currAng, ax)
-
-#   if (idx >= len(wayPts)):
-#     pause(0.1)
-#     continue
-
-
-#   currPos = a.getTool(currAng)
-#   augmentedWaypt = array([wayPts[idx][0], wayPts[idx][1], 1])
-#   targetPos = coordinates.transformPaperToReal(augmentedWaypt)
-
-#   if (norm(targetPos - currPos[0:3]) < 0.1):
-#     idx += 1
-#     if (idx >= len(wayPts)):
-#       continue
-#     continue
-
-#   direction = targetPos - currPos[0:3]
-#   Jt = a.getToolJac(currAng)
-#   currAng = currAng + 0.2 * dot(pinv(Jt)[:,:len(direction)],direction)
-#   currAng[3] = a.calculateEndEffectorAngles(True, [currAng[1], currAng[2]])
-
-
-#   pause(0.1)
-
-
 ion()
 paperPoints = array([[0, -paperWidth/2, 0],
   [0, paperWidth/2, 0],
@@ -73,11 +28,14 @@ ax = f.gca(projection='3d')
 
 
 startAng = array([0, 0, 0, 0])
-endAng = array([0, 1, 0, 0])
-endAng = a.inverseKinematics([40, 0, 10], -pi/2, startAng)
-print endAng
-print a.armAnglesToKinematicAngles(endAng)
-# print a.forwardKinematics(endAng)
+
+points = [[40, 0, 10], [42, 0, 10], [44, 0, 10], [46, 0, 10], [48, 0, 10]]
+
+# endAng = array([0, 1, 0, 0])
+# endAng = a.inverseKinematics([40, 0, 10], -pi/2, startAng)
+# print endAng
+# print a.armAnglesToKinematicAngles(endAng)
+# # print a.forwardKinematics(endAng)
 
 
 timeTaken = 1
@@ -92,9 +50,23 @@ while True:
   a.plot(currAng, ax)
   ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
   draw()
-  if (i < timeTaken / pauseTime):
-    currAng = currAng + (endAng - startAng) * scalar
-    i += 1
+  if (len(points) != 0):
+    currPos = a.forwardKinematics(currAng)
+    dist = (currPos[0] - points[0][0])**2 + (currPos[1] - points[0][1])**2 + (currPos[2] - points[0][2])**2
+
+    if (dist < 0.2):
+      points.pop(0)
+      continue
+
+    print("CurrPos: " + str(currPos) + "\tTarget: " + str(points[0]))
+
+    endAng = a.inverseKinematics(points[0], -pi/2, currAng)
+
+    currAng = currAng + (endAng - currAng) * scalar
+
+  # if (i < timeTaken / pauseTime):
+  #   currAng = currAng + (endAng - startAng) * scalar
+  #   i += 1
   pause(pauseTime)
 
 

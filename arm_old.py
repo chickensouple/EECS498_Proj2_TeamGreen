@@ -5,6 +5,7 @@ from matplotlib import *
 from matplotlib.pyplot import *
 from mpl_toolkits.mplot3d import Axes3D
 from math498 import *
+from Constants import *
 import pdb
 
 def seToSE( x ):
@@ -139,9 +140,9 @@ class Arm( object ):
   """
   def __init__(self):
     # link lengths
-    self.ll = asarray([0, 20, 20, 2])
-    self.lly = asarray([0, -5, 0, 0])
-    self.llz = asarray([5, 0, -5, 0])
+    self.ll = asarray([0, 24.5, 26.7])
+    self.lly = asarray([0, -3, 0])
+    self.llz = asarray([15.9, 0, 0])
 
     # arm geometry to draw
     d=0.2
@@ -166,10 +167,11 @@ class Arm( object ):
     self.motorOrientations = asarray([
       [0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0], [1, 0, 0], [0, 0, 0]
       ])
-    #
+
+    
     # Build twist matrices 
     # Build wireframe of all segments in the world coordinates
-    #
+    
     tw = []
     LL = 0
     LLY = 0
@@ -205,68 +207,29 @@ class Arm( object ):
       self.getTool, ones(self.tw.shape[0])*0.05 
     )
 
-    arenaLength = 30.48; # cm
-    self.arenaLength = arenaLength
-    self.arenaPoints = array([[-arenaLength/2, 0, 0], 
-      [arenaLength/2, 0, 0],
-      [arenaLength/2, arenaLength, 0],
-      [-arenaLength/2, arenaLength, 0],
-      [-arenaLength/2, 0, 0], 
-      [-arenaLength/2, 0, arenaLength], 
-      [arenaLength/2, 0, arenaLength],
-      [arenaLength/2, 0, 0],
-      [arenaLength/2, 0, arenaLength],
-      [arenaLength/2, arenaLength, arenaLength],
-      [arenaLength/2, arenaLength, 0],
-      [arenaLength/2, arenaLength, arenaLength],
-      [-arenaLength/2, arenaLength, arenaLength],
-      [-arenaLength/2, arenaLength, 0],
-      [-arenaLength/2, arenaLength, arenaLength],
-      [-arenaLength/2, 0, arenaLength]])
+    self.paperPoints = None
+    self.toolHistory = []
 
-    self.arenaPoints[:, 0] += 0
-    self.arenaPoints[:, 1] += 10
-    self.arenaPoints[:, 2] += -5
 
-    paperWidth = 21 #cm
-    paperLength = 29.7 # cm
-    self.paperPoints = array([[-paperWidth/2, 0, 0],
-      [paperWidth/2, 0, 0],
-      [paperWidth/2, paperLength, 0],
-      [-paperWidth/2, paperLength, 0],
-      [-paperWidth/2, 0, 0]])
+    self.angleOffsets = [0, -0.372987, pi/2 + 0.372987]
+
+
+  def convertMotorToModelAngles(self, motorAngles):
+    angles = []
+    for i in range(3):
+      angles.append(motorAngles[i] + self.angleOffsets[i])
+    return angles
+
+  def convertModelToMotorAngles(self, modelAngles):
+    angles = []
+    for i in range(3):
+      angles.append(modelAngles[i] - self.angleOffsets[i])
+    return angles
 
 
 
-    flip = True
-    if (flip):
-      temp = copy(self.paperPoints[:, 1])
-      self.paperPoints[:, 1] = self.paperPoints[:, 2]
-      self.paperPoints[:, 2] = temp
-
-    self.paperXOffset = 5
-    self.paperYOffset = 10
-    self.paperZOffset = -5
-
-    self.paperPoints[:, 0] += self.paperXOffset
-    self.paperPoints[:, 1] += self.paperYOffset
-    self.paperPoints[:, 2] += self.paperZOffset
-
-    self.toolHistory = None
-
-    self.penOffset = pi / 4
-
-
-  def calculateEndEffectorAngles(self, vertical, angles):
-    theta1 = angles[0]
-    theta2 = angles[1]
-    angle = -(pi/2) + (-theta1 + pi - theta2) + self.penOffset
-    if (vertical):
-      angle -= pi/2
-    angle = angle_wrap_pi(angle)
-
-    return angle
-
+  def setPaperPoints(self, paperPoints):
+    self.paperPoints = concatenate([paperPoints, paperPoints[0, :][newaxis, :]], 0)
 
   def at( self, ang ):
     """
@@ -312,6 +275,7 @@ class Arm( object ):
     
 
   def plotReal3D(self, ang, ax):
+    ax.cla()
     A = self.at(ang)
     for a,g in zip(A, self.geom):
       ng = dot(a, g)
@@ -319,25 +283,57 @@ class Arm( object ):
         continue
       ax.plot3D(ng[0,:],ng[1,:],ng[2,:])
 
-
-
     tp = dot(a, self.tool)
-    tp = tp[:, newaxis]
 
+    self.toolHistory.append(tp)
+    if (len(self.toolHistory) > 200):
+      self.toolHistory.pop(0)
 
+    toolHistory = array(self.toolHistory).T
 
-    if (self.toolHistory == None):
-      self.toolHistory = tp
-    else:
-      self.toolHistory = concatenate([self.toolHistory, tp], 1)
-      ax.plot3D(self.toolHistory[0, :], self.toolHistory[1, :], self.toolHistory[2, :])
-
-    # draw arena
-    ax.plot3D(self.arenaPoints[:, 0], self.arenaPoints[:, 1], self.arenaPoints[:, 2])
+    ax.plot3D(toolHistory[0, :], toolHistory[1, :], toolHistory[2, :])
 
     # draw paper
-    ax.plot3D(self.paperPoints[:, 0], self.paperPoints[:, 1], self.paperPoints[:, 2])
+    if (self.paperPoints != None):
+      ax.plot3D(self.paperPoints[:, 0], self.paperPoints[:, 1], self.paperPoints[:, 2])
 
     ax.set_xlabel('X axis')
     ax.set_ylabel('Y axis')
     ax.set_zlabel('Z axis')
+
+if (__name__ == "__main__"):
+  ion()
+  paperPoints = array([[0, -paperWidth/2, 0],
+    [0, paperWidth/2, 0],
+    [paperLength, paperWidth/2, 0],
+    [paperLength, -paperWidth/2, 0],
+    [0, -paperWidth/2, 0]])
+  paperPoints[:, 0] += 20 # x
+  paperPoints[:, 2] += 5 # z
+
+  a = Arm()
+  a.setPaperPoints(paperPoints)
+  f = gcf()
+  f.clf()
+  ax = f.gca(projection='3d')
+
+  startAng = array([0, 0, 0])
+  endAng = array([0, 0, 1])
+
+
+  timeTaken = 1
+  pauseTime = 0.1
+  scalar = 1 / (timeTaken / pauseTime)
+  currAng = startAng
+  i = 0
+
+  while True:
+    a.plotReal3D(currAng, ax)
+    ax.set(xlim=[-50,50],ylim=[-50,50],zlim=[-50,50])
+    draw()
+
+    if (i < timeTaken / pauseTime):
+      currAng = currAng + (endAng - startAng) * scalar
+      i += 1
+    pause(pauseTime)
+
