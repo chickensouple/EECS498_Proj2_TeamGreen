@@ -12,6 +12,7 @@ from Coordinates import *
 from MoveToPointPlan import *
 from DrawLinePlan import *
 from DrawSquarePlan import *
+from MultipleLinePlan import *
 import pdb
 
 # Turn on interactive mode in MatPlotLib
@@ -48,7 +49,19 @@ class MainApp(JoyApp):
 		self.moveToPointPlan = MoveToPointPlan(self)
 		self.drawLinePlan = DrawLinePlan(self)
 		self.drawSquarePlan = DrawSquarePlan(self)
+		self.multipleLinePlan = MultipleLinePlan(self)
 		self.moveToPointPlan.setPaperOrientation(self.orientation)
+
+		self.startPoints = [[5, -10], [10, -15]]
+		self.endPoints = [[18, -18], [1, -2]]
+
+		self.lines = [ 
+			[(18,10), (10,22)], [(18,35), (27,24)], [(19,10), (27,25)], [(18,35), (10,22)],
+			[(29,37), (30,11)], [(42,36), (42,12)], [(29,12), (41,36)], [(14,46), (13,70)], 
+			[(31,45), (20,58)], [(22,58), (32,70)], [(45,46), (33,54)], [(38,70), (49,61)], 
+			[(34,55), (49,62)] ]
+
+
 
 
 	def onStart(self):
@@ -109,6 +122,29 @@ class MainApp(JoyApp):
 				self.orientation = PaperOrientation.HORIZONTAL
 				print("Horizontal")
 
+		elif evt.key == K_l:
+			startPoints = []
+			endPoints = []
+			for line in self.lines:
+				startPoint = list(line[0])
+				endPoint = list(line[1])
+
+
+				temp = startPoint[0]
+				startPoint[0] = startPoint[1]
+				startPoint[1] = -temp
+
+
+				temp = endPoint[0]
+				endPoint[0] = endPoint[1]
+				endPoint[1] = -temp
+
+				startPoints.append(startPoint)
+				endPoints.append(endPoint)
+
+
+			self.multipleLinePlan.setPoints(startPoints, endPoints, self.orientation)
+			self.multipleLinePlan.start()
 
 		elif evt.key == K_z:
 			self.motors.go_slack()

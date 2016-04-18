@@ -2,7 +2,7 @@
 paperWidth = 21 #cm
 paperLength = 29.7 # cm
 
-effectorHeight = 18
+effectorHeight = 19
 
 class PaperOrientation:
 	VERTICAL = 0

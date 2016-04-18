@@ -12,7 +12,7 @@ class DrawLinePlan(Plan):
 		self.press_dist = 1
 		self.orientation = None
 
-	def setPoints(self, start, end, orientation):
+	def setPoints(self, start, end, orientation, liftup):
 		# start and end are 3d points
 		start3d = array(self.app.coordinates.transformPaperToReal(start))
 		end3d = array(self.app.coordinates.transformPaperToReal(end))
@@ -28,10 +28,13 @@ class DrawLinePlan(Plan):
 			return
 
 		self.points = []
-		self.points.append(start3d + liftVec)
+
+		if (liftup):
+			self.points.append(start3d + liftVec)
 		self.points.append(start3d + pressVec)
 		self.points.append(end3d + pressVec)
-		self.points.append(end3d + liftVec)
+		if (liftup):
+			self.points.append(end3d + liftVec)
 		self.orientation = orientation
 
 	def behavior(self):
@@ -39,6 +42,9 @@ class DrawLinePlan(Plan):
 			print("No set positions")
 
 		while (len(self.points) != 0):
+			print("Move to (" + str(self.points[0][0]) + ", " +
+							 str(self.points[0][1]) + ", " +
+							 str(self.points[0][2]) )
 			targetPoint = self.points[0]
 
 			while (self.app.moveToPointPlan.isRunning()):

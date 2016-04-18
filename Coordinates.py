@@ -88,8 +88,8 @@ class Coordinates:
 			z = self.z_offset
 		elif (self.orientation == PaperOrientation.VERTICAL):
 			x = self.x_offset
-			y = self.y_offset + (paperPoints[0] - paperLength/2)
-			z = self.z_offset + (paperPoints[1] + paperWidth/2)
+			y = self.y_offset + (paperPoints[0] + paperWidth/2)
+			z = self.z_offset + (paperPoints[1] - paperLength/2)
 		return [x, y, z]
 
 
