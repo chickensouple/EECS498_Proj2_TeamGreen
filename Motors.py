@@ -12,10 +12,13 @@ class Motors:
 		self.motors = motors
 		self.centidegToRad = pi / 18000
 		self.radToCentideg = 18000 / pi
+		self.defaultSpeed = 2
+		self.maxSpeed = 10
 		for motor in self.motors:
 			motor.set_mode(0)
-			motor.set_speed(2)
-			motor.go_slack()
+			motor.set_speed(self.defaultSpeed)
+			# motor.go_slack()
+			motor.set_torque_limit(1)
 
 		self.motorDirs = [1, 1, 1, -1]
 		self.motorOffsets = [0, 0, 0, 0]
@@ -33,6 +36,19 @@ class Motors:
 		for motor, motorDir, motorOffset, angle in zip(self.motors, self.motorDirs, self.motorOffsets, angles):
 			sentAngle = int(angle * self.radToCentideg * motorDir + motorOffset)
 			motor.set_pos(sentAngle)
+
+	def set_speeds(self, speeds):
+		for motor, speed in zip(self.motors, speeds):
+			if (speed < 1):
+				motor.set_speed(1)
+			elif (speed > self.maxSpeed):
+				motor.set_speed(self.maxSpeed)
+			else:
+				motor.set_speed(speed)
+
+	def set_default_speeds(self):
+		for motor in self.motors:
+			motor.set_speed(self.defaultSpeed)
 
 	def set_angle(self, idx, angle):
 		self.motors[idx].set_pos(int((angle + self.motorOffsets[idx]) * self.radToCentideg * self.motorDirs[idx]))

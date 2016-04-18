@@ -12,6 +12,9 @@ class MoveToPointPlan(Plan):
 		self.point = None
 		self.paperOrientation = None
 		self.motorAngles = None
+		self.moveDist = 2
+		self.angles = None
+		self.maxSpeed = 3
 
 	def setPaperOrientation(self, orientation):
 		self.paperOrientation = orientation
@@ -28,8 +31,9 @@ class MoveToPointPlan(Plan):
 
 		targetModelAngles = modelAngles
 		dist = linalg.norm(currPos - self.point)
-		# TODO: add break if this goes on too long
+		initialDist = dist
 
+		# TODO: add break if this goes on too long
 		i = 0
 		while (dist > 0.2):
 			currPos = array(self.app.arm.getTool(targetModelAngles))[0:3]
@@ -60,22 +64,56 @@ class MoveToPointPlan(Plan):
 
 
 		if (self.paperOrientation == PaperOrientation.VERTICAL):
-			self.targetMotorAngles.append(-self.targetMotorAngles[1] + pi/2)
+			self.targetMotorAngles.append(-self.targetMotorAngles[1] - pi/2)
 		elif (self.paperOrientation == PaperOrientation.HORIZONTAL):
 			self.targetMotorAngles.append(-self.targetMotorAngles[1])
 
 
-		print("Target Motor Angles: " + str(self.targetMotorAngles))
+		numSteps = initialDist / self.moveDist
+		self.angles = []
+		anglesDelta = (array(self.targetMotorAngles) - array(motorAngles)) / numSteps
+
+		for i in range(int(numSteps)):
+			self.angles.append(motorAngles + i * anglesDelta)
+		self.angles.append(self.targetMotorAngles)
+
 
 
 	def behavior(self):
-		if (self.targetMotorAngles == None):
+		if (self.angles == None):
+			print("No set position")
 			yield
 
+		print("Start: " + str(self.angles))
+
+		while (len(self.angles) != 0):
+			targetAngles = array(self.angles[0])
+			print("Target Angles: " + str(targetAngles))
+
+			motorAngles = array(self.app.motors.get_angles())
+
+			angleDiff = targetAngles - motorAngles
+
+			maxAngleDiff = max(angleDiff)
+			if (maxAngleDiff == 0):
+				self.app.motors.set_default_speeds()
+			else:
+				speeds = abs(angleDiff * self.maxSpeed / maxAngleDiff)
+				self.app.motors.set_speeds(speeds)
+				print("Angle Diffs: " + str(angleDiff))
+				print("Speeds: " + str(speeds))
+			self.app.motors.set_angles(targetAngles)
+
+			while (linalg.norm(angleDiff) > 0.1):
+				yield self.forDuration(0.01)
+				motorAngles = array(self.app.motors.get_angles())
+				angleDiff = targetAngles - motorAngles
 		
-		self.app.motors.set_angles(self.targetMotorAngles)
+			self.angles.pop(0)
 		
 
+
+		print("Done")
 
 		yield
 

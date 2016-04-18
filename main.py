@@ -42,7 +42,7 @@ class MainApp(JoyApp):
 		self.timeForPlot = self.onceEvery(1.0/3.0)
 
 		self.moveToPointPlan = MoveToPointPlan(self)
-		self.moveToPointPlan.setPaperOrientation(PaperOrientation.HORIZONTAL)
+		self.moveToPointPlan.setPaperOrientation(PaperOrientation.VERTICAL)
 
 	def onStart(self):
 		pass
