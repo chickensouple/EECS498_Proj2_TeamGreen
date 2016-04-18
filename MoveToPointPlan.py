@@ -1,10 +1,8 @@
 from joy import *
 from math498 import *
 from numpy import *
+from Constants import *
 
-class PaperOrientation:
-	VERTICAL = 0
-	HORIZONTAL = 1
 
 class MoveToPointPlan(Plan):
 	def __init__(self, app, *arg, **kw):
@@ -14,13 +12,19 @@ class MoveToPointPlan(Plan):
 		self.motorAngles = None
 		self.moveDist = 2
 		self.angles = None
-		self.maxSpeed = 3
+		self.maxSpeed = 1
 
 	def setPaperOrientation(self, orientation):
 		self.paperOrientation = orientation
 
 	def setPoint(self, point):
+		# call setOrientation before set point
 		self.point = array(point)
+
+		if (self.paperOrientation == PaperOrientation.VERTICAL):
+			self.point[0] -= effectorHeight
+		elif (self.paperOrientation == PaperOrientation.HORIZONTAL):
+			self.point[2] += effectorHeight
 
 		motorAngles = array(self.app.motors.get_angles())
 		motorAnglesNoEffector = motorAngles[0:3]
@@ -47,7 +51,7 @@ class MoveToPointPlan(Plan):
 				direction /= 6
 				i += 1
 
-			Jt = self.app.arm.getToolJac(modelAngles)
+			Jt = self.app.arm.getToolJac(targetModelAngles)
 			deltaAngles = dot(linalg.pinv(Jt)[:,:len(direction)],direction)
 			targetModelAngles += deltaAngles
 
@@ -84,11 +88,11 @@ class MoveToPointPlan(Plan):
 			print("No set position")
 			yield
 
-		print("Start: " + str(self.angles))
+		# print("Start: " + str(self.angles))
 
 		while (len(self.angles) != 0):
 			targetAngles = array(self.angles[0])
-			print("Target Angles: " + str(targetAngles))
+			# print("Target Angles: " + str(targetAngles))
 
 			motorAngles = array(self.app.motors.get_angles())
 
@@ -100,8 +104,8 @@ class MoveToPointPlan(Plan):
 			else:
 				speeds = abs(angleDiff * self.maxSpeed / maxAngleDiff)
 				self.app.motors.set_speeds(speeds)
-				print("Angle Diffs: " + str(angleDiff))
-				print("Speeds: " + str(speeds))
+				# print("Angle Diffs: " + str(angleDiff))
+				# print("Speeds: " + str(speeds))
 			self.app.motors.set_angles(targetAngles)
 
 			while (linalg.norm(angleDiff) > 0.1):
@@ -113,7 +117,8 @@ class MoveToPointPlan(Plan):
 		
 
 
-		print("Done")
+		# print("Done")
+		self.angles = None
 
 		yield
 

@@ -10,6 +10,8 @@ from joy.decl import *
 from Motors import *
 from Coordinates import *
 from MoveToPointPlan import *
+from DrawLinePlan import *
+from DrawSquarePlan import *
 import pdb
 
 # Turn on interactive mode in MatPlotLib
@@ -31,6 +33,8 @@ class MainApp(JoyApp):
 		motors.append(self.robot.at.Nx06)
 		self.motors = Motors(motors)
 
+		self.orientation = PaperOrientation.HORIZONTAL
+
 		self.angles1 = None
 		self.angles2 = None
 		self.coordinates = Coordinates()
@@ -42,7 +46,10 @@ class MainApp(JoyApp):
 		self.timeForPlot = self.onceEvery(1.0/3.0)
 
 		self.moveToPointPlan = MoveToPointPlan(self)
-		self.moveToPointPlan.setPaperOrientation(PaperOrientation.VERTICAL)
+		self.drawLinePlan = DrawLinePlan(self)
+		self.drawSquarePlan = DrawSquarePlan(self)
+		self.moveToPointPlan.setPaperOrientation(self.orientation)
+
 
 	def onStart(self):
 		pass
@@ -94,6 +101,14 @@ class MainApp(JoyApp):
 			self.moveToAnglesPlan.setAngles(self.angles2)
 			self.moveToAnglesPlan.run()
 
+		elif evt.key == K_t:
+			if (self.orientation == PaperOrientation.HORIZONTAL):
+				self.orientation = PaperOrientation.VERTICAL
+				print("VERTICAL")
+			else:
+				self.orientation = PaperOrientation.HORIZONTAL
+				print("Horizontal")
+
 
 		elif evt.key == K_z:
 			self.motors.go_slack()
@@ -105,11 +120,29 @@ class MainApp(JoyApp):
 
 			print("Model Angles: " + str(array(modelAngles) * 180/pi))
 
-			print("Pos: " + str(self.arm.getTool(modelAngles)))
+			pos3d = self.arm.getTool(modelAngles)[0:3]
+			pos3d[2] -= effectorHeight
+			print("Pos: " + str(pos3d))
+
+
+		elif evt.key == K_s:
+			if (not self.coordinates.isCalibrated()):
+				print("Not calibrated")
+				return
+			self.drawSquarePlan.setOrientation(self.orientation)
+			self.drawSquarePlan.start()
+			# self.drawLinePlan.setPoints([10, 0], [10, 10], self.orientation)
+			# self.drawLinePlan.start()
 
 
 		elif evt.key == K_c:
-			temp = array(self.arm.forwardKinematics(self.motors.get_angles()))
+			modelAngles = self.arm.convertMotorToModelAngles(self.motors.get_angles())
+			temp = array(self.arm.getTool(modelAngles))[0:3]
+			if (self.orientation == PaperOrientation.HORIZONTAL):
+				temp[2] -= effectorHeight
+			elif (self.orientation == PaperOrientation.VERTICAL):
+				temp[0] += effectorHeight
+
 			if (self.calibrateIdx == -1):
 				print("Started Calibration. Move arm to lower left of paper, then press \'c\'")
 			elif (self.calibrateIdx == 0):
@@ -124,8 +157,8 @@ class MainApp(JoyApp):
 			elif (self.calibrateIdx == 3):
 				print ("Finished Calibration")
 				self.calibrationPoints.append(temp)
-				self.coordinates.calibrate(self.calibrationPoints)
-				self.arm.armPlot.setPaperPoints(self.calibrationPoints)
+				self.coordinates.calibrate(array(self.calibrationPoints), self.orientation)
+				self.arm.setPaperPoints(array(self.calibrationPoints))
 
 				self.calibrationPoints = []
 			self.calibrateIdx += 1

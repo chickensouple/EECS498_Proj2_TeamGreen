@@ -141,7 +141,7 @@ class Arm( object ):
   def __init__(self):
     # link lengths
     self.ll = asarray([0, 24.5, 26.7])
-    self.lly = asarray([0, -3, 0])
+    self.lly = asarray([0, -7.5, 0])
     self.llz = asarray([15.9, 0, 0])
 
     # arm geometry to draw
@@ -227,8 +227,8 @@ class Arm( object ):
     return angles
 
 
-
   def setPaperPoints(self, paperPoints):
+    print paperPoints
     self.paperPoints = concatenate([paperPoints, paperPoints[0, :][newaxis, :]], 0)
 
   def at( self, ang ):
